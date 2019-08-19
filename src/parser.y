@@ -7,7 +7,8 @@
     #include <cstdlib>
 	NBlock *programBlock;
 
-    void yyerror(YYLTYPE* loc, const char* err);
+	extern int yylex();
+    void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 %}
 
 
@@ -17,7 +18,7 @@
 	NExpression *expr;
 	NStatement *stmt;
 	NIdentifier *ident;
-	NVariableDeclarationDeduce *var_decl_deduce;
+	NVariableDeclaration *var_decl;
 	std::vector<NExpression*> *exprvec;
 
 	std::string *string;
@@ -44,8 +45,6 @@
 
 %locations
 
-%define api.pure full
-%define api.push-pull push
 
 %start program
 
@@ -70,7 +69,7 @@ numeric	: INTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
 		| FLOAT { $$ = new NDouble(atof($1->c_str())); delete $1; }
 		;
 	
-var_decl	: ident ASSIGN expr { $$ = new NVariableDeclarationDeduce(*$1, $3); }
+var_decl	: ident ASSIGN expr { $$ = new NVariableDeclaration(*$1, $3); }
 			;
 	
 func_call	: ident LPAREN call_args RPAREN { std::cout << programBlock; $$ = new NMethodCall(*$1, *$3); delete $3; }
@@ -98,7 +97,3 @@ bin_op	: PLUS
 
 	
 %%
-
-void yyerror(YYLTYPE* loc, const char* err) {
-	std::cerr << "Error: " << err << std::endl;
-}

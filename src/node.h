@@ -13,8 +13,8 @@ typedef std::vector<NVariableDeclaration*> VariableList;
 
 class Node {
 public:
-	virtual ~Node() {}
-	virtual llvm::Value* codeGen(CodeGenContext& context) { return NULL; }
+    virtual ~Node() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context) { return NULL; }
 };
 
 class NExpression : public Node {
@@ -88,24 +88,14 @@ public:
 	virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NVariableDeclarationDeduce : public NStatement {
+class NVariableDeclaration : public NStatement {
 public:
 	NIdentifier& id;
 	NExpression *assignmentExpr;
-	NVariableDeclarationDeduce(NIdentifier& id) :
+	NVariableDeclaration(NIdentifier& id) :
 		 id(id) { assignmentExpr = NULL; }
-	NVariableDeclarationDeduce(NIdentifier& id, NExpression *assignmentExpr) :
+	NVariableDeclaration(NIdentifier& id, NExpression *assignmentExpr) :
 		 id(id), assignmentExpr(assignmentExpr) { }
 	virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NBool : public NExpression {
-public:
-    bool value = false;
-
-    NBool(bool val) {
-        value = val;
-    }
-
-    virtual llvm::Value *codeGen(CodeGenContext &context);
-};

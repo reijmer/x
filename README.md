@@ -9,8 +9,3 @@ Not all of this code is my original work, I will add credits where due later.
 Basic variable declaration and arithmetic is working. Printing integer values also works.
 
 Working examples are included in `examples/`.
-
-
-update:
-
-broken, parser doesn't start at program anymore now that it's a push parser. need to look into that.
