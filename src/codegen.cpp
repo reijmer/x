@@ -28,22 +28,17 @@ GenericValue CodeGenContext::runCode() {
     return v;
 }
 
-static Type *typeOf(const NIdentifier& type) {
-    if (type.name.compare("int") == 0) {
-        return Type::getInt64Ty(MyContext);
-    }
-    else if (type.name.compare("double") == 0) {
-        return Type::getDoubleTy(MyContext);
-    }
-    return Type::getVoidTy(MyContext);
-}
-
 Value* NInteger::codeGen(CodeGenContext& context) {
     return ConstantInt::get(Type::getInt64Ty(MyContext), value, true);
 }
 
 Value* NDouble::codeGen(CodeGenContext& context) {
     return ConstantFP::get(Type::getDoubleTy(MyContext), value);
+}
+
+Value* NString::codeGen(CodeGenContext& context) {
+    IRBuilder<> builder(context.currentBlock());
+    return builder.CreateGlobalStringPtr(StringRef(value));
 }
 
 Value* NIdentifier::codeGen(CodeGenContext& context) {
@@ -91,7 +86,7 @@ Value* NBinaryOperator::codeGen(CodeGenContext& context) {
     return NULL;
 math:
     return BinaryOperator::Create(instr, lhs.codeGen(context), 
-    rhs.codeGen(context), "", context.currentBlock());
+        rhs.codeGen(context), "", context.currentBlock());
 }
 
 Value* NBooleanOperator::codeGen(CodeGenContext& context) {

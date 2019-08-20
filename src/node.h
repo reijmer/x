@@ -24,21 +24,28 @@ class NStatement : public Node {};
 class NInteger : public NExpression {
 public:
     long long value;
-    NInteger(long long value) : value(value) { }
+    NInteger(long long value) : value(value) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NDouble : public NExpression {
 public:
     double value;
-    NDouble(double value) : value(value) { }
+    NDouble(double value) : value(value) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NIdentifier : public NExpression {
 public:
     std::string name;
-    NIdentifier(const std::string& name) : name(name) { }
+    NIdentifier(const std::string& name) : name(name) {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class NString : public NExpression {
+public:
+    std::string value;
+    NString(const std::string& value) : value(value) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -58,7 +65,7 @@ public:
     NExpression& lhs;
     NExpression& rhs;
     NBinaryOperator(NExpression& lhs, int op, NExpression& rhs) :
-        lhs(lhs), rhs(rhs), op(op) { }
+        lhs(lhs), rhs(rhs), op(op) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -68,7 +75,7 @@ public:
     NExpression& lhs;
     NExpression& rhs;
     NBooleanOperator(NExpression& lhs, int op, NExpression& rhs) :
-        lhs(lhs), rhs(rhs), op(op) { }
+        lhs(lhs), rhs(rhs), op(op) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -76,7 +83,7 @@ class NAssignment : public NExpression {
 public:
     NIdentifier& lhs;
     NExpression& rhs;
-    NAssignment(NIdentifier& lhs, NExpression& rhs) : lhs(lhs), rhs(rhs) { }
+    NAssignment(NIdentifier& lhs, NExpression& rhs) : lhs(lhs), rhs(rhs) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 

@@ -31,10 +31,10 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 %token <token> PLUS MINUS MULT DIV MOD INDENT DEDENT IF ELSE
 %token <token> TRUE FALSE
 
-%token <string> IDENTIFIER INTEGER FLOAT
+%token <string> IDENTIFIER INTEGER FLOAT STRING
  
 %type <ident> ident
-%type <expr> numeric expr func_call bool
+%type <expr> numeric expr func_call bool string
 %type <exprvec> call_args
 %type <block> program stmts block
 %type <stmt> stmt var_decl if_stmt
@@ -77,6 +77,9 @@ numeric : INTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
 bool    : TRUE { $$ = new NBool(true); }
         | FALSE { $$ = new NBool(false); }
         ;
+
+string  : STRING { $$ = new NString($1->c_str()); delete $1; }
+        ;
 	
 var_decl    : ident ASSIGN expr { $$ = new NVariableDeclaration(*$1, $3); }
             ;
@@ -96,6 +99,7 @@ call_args   : expr { $$ = new ExpressionList(); $$->push_back($1); }
 expr    : ident { $<ident>$ = $1; }
         | numeric
         | bool
+        | string
         | ident ASSIGN expr { $$ = new NAssignment(*$<ident>1, *$3); }
         | expr bin_op expr { $$ = new NBinaryOperator(*$1, $2, *$3); }
         | expr bool_op expr { $$ = new NBooleanOperator(*$1, $2, *$3); }
