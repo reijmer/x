@@ -86,7 +86,18 @@ Value* NBinaryOperator::codeGen(CodeGenContext& context) {
         case MOD:
             instr = Instruction::SRem;
             goto math;
-        
+    }
+
+    return NULL;
+math:
+    return BinaryOperator::Create(instr, lhs.codeGen(context), 
+    rhs.codeGen(context), "", context.currentBlock());
+}
+
+Value* NBooleanOperator::codeGen(CodeGenContext& context) {
+    Instruction::BinaryOps instr;
+    IRBuilder<> builder(context.currentBlock());
+    switch (op) {
         case TCNE:
             return builder.CreateICmpNE(lhs.codeGen(context), rhs.codeGen(context), "");
         case TCEQ:
@@ -100,11 +111,7 @@ Value* NBinaryOperator::codeGen(CodeGenContext& context) {
         case TCLT:
             return builder.CreateICmpSLT(lhs.codeGen(context), rhs.codeGen(context), "");
     }
-
     return NULL;
-math:
-    return BinaryOperator::Create(instr, lhs.codeGen(context), 
-    rhs.codeGen(context), "", context.currentBlock());
 }
 
 
@@ -147,7 +154,6 @@ Value* NVariableDeclaration::codeGen(CodeGenContext& context) {
 }
 
 Value *NBool::codeGen(CodeGenContext &context) {
-    cout << "Creating code for: bool" << endl;
     IRBuilder<> builder(context.currentBlock());
     if (value)
         return builder.getTrue();
@@ -156,8 +162,8 @@ Value *NBool::codeGen(CodeGenContext &context) {
 }
 
 Value *NIfStatement::codeGen(CodeGenContext &context) {
+    
     Function *function = context.currentBlock()->getParent();
-
     BasicBlock *thenBlock = BasicBlock::Create(MyContext, "then", function);
     BasicBlock *elseBlock = BasicBlock::Create(MyContext, "else");
     BasicBlock *mergeBlock = BasicBlock::Create(MyContext, "cont");
@@ -174,7 +180,6 @@ Value *NIfStatement::codeGen(CodeGenContext &context) {
     Value *thenValue = truecond->codeGen(context);
     BranchInst::Create(mergeBlock, context.currentBlock());
     context.popBlock();
-    
 
     if (falsecond != nullptr) {
         function->getBasicBlockList().push_back(elseBlock);

@@ -29,15 +29,16 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 %token <token> TCEQ TCNE TCLT TCLE TCGT TCGE ASSIGN
 %token <token> LPAREN RPAREN LBRACE RBRACE COMMA COLON
 %token <token> PLUS MINUS MULT DIV MOD INDENT DEDENT IF ELSE
+%token <token> TRUE FALSE
 
 %token <string> IDENTIFIER INTEGER FLOAT
  
 %type <ident> ident
-%type <expr> numeric expr func_call
+%type <expr> numeric expr func_call bool
 %type <exprvec> call_args
 %type <block> program stmts block
 %type <stmt> stmt var_decl if_stmt
-%type <token> op bin_op bool_op
+%type <token> bin_op bool_op
 
 %left PLUS MINUS
 %left MULT DIV
@@ -72,6 +73,10 @@ ident   : IDENTIFIER { $$ = new NIdentifier(*$1); delete $1;}
 numeric : INTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
         | FLOAT { $$ = new NDouble(atof($1->c_str())); delete $1; }
         ;
+
+bool    : TRUE { $$ = new NBool(true); }
+        | FALSE { $$ = new NBool(false); }
+        ;
 	
 var_decl    : ident ASSIGN expr { $$ = new NVariableDeclaration(*$1, $3); }
             ;
@@ -90,15 +95,13 @@ call_args   : expr { $$ = new ExpressionList(); $$->push_back($1); }
 
 expr    : ident { $<ident>$ = $1; }
         | numeric
+        | bool
         | ident ASSIGN expr { $$ = new NAssignment(*$<ident>1, *$3); }
-        | expr op expr { $$ = new NBinaryOperator(*$1, $2, *$3); }
+        | expr bin_op expr { $$ = new NBinaryOperator(*$1, $2, *$3); }
+        | expr bool_op expr { $$ = new NBooleanOperator(*$1, $2, *$3); }
         | LPAREN expr RPAREN { $$ = $2; }
         | func_call
         ;
-
-op  : bin_op
-    | bool_op
-    ;
 
 bin_op  : PLUS
         | MINUS

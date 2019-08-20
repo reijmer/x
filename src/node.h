@@ -62,6 +62,16 @@ public:
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
+class NBooleanOperator : public NExpression {
+public:
+    int op;
+    NExpression& lhs;
+    NExpression& rhs;
+    NBooleanOperator(NExpression& lhs, int op, NExpression& rhs) :
+        lhs(lhs), rhs(rhs), op(op) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
 class NAssignment : public NExpression {
 public:
     NIdentifier& lhs;
@@ -108,28 +118,12 @@ class NIfStatement : public NStatement {
 public:
     NBlock *truecond;
     NBlock *falsecond;
-    NBinaryOperator *cond;
+    NBooleanOperator *cond;
 
-    NIfStatement(NExpression *exprNode, NBlock *true_blockNode, NBlock *false_blockNode) {
-        if (dynamic_cast<NInteger *>(exprNode)) {
-            NInteger *intNode = dynamic_cast<NInteger *>(exprNode);
-            if (intNode->value > 0) {
-                cond = reinterpret_cast<NBinaryOperator *>(new NBool(true));
-            } else {
-                cond = reinterpret_cast<NBinaryOperator *>(new NBool(false));
-            }
-        } else {
-            cond = (NBinaryOperator *) exprNode;
-        }
-        truecond = true_blockNode;
-        falsecond = false_blockNode;
-    }
-
-    NIfStatement(NExpression *exprNode, NBlock *true_blockNode) {
-        cond = dynamic_cast<NBinaryOperator *>(exprNode);
-        truecond = true_blockNode;
-        falsecond = nullptr;
-    }
+    NIfStatement(NExpression *exprNode, NBlock *true_blockNode, NBlock *false_blockNode = nullptr) :
+            cond((NBooleanOperator*)exprNode),
+            truecond(true_blockNode),
+            falsecond(false_blockNode) {}
 
     virtual llvm::Value *codeGen(CodeGenContext &context);
 };

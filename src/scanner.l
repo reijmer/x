@@ -161,6 +161,10 @@ int indent_caller = 0;
 "else"      { return((yylval.token = ELSE)); }
 
 
+"True"      { return((yylval.token = TRUE)); }
+"False"     { return((yylval.token = FALSE)); }
+
+
 {ident}   	{
             yylval.string = new std::string(yytext, yyleng);
             return(IDENTIFIER);
