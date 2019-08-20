@@ -17,85 +17,119 @@ public:
     virtual llvm::Value* codeGen(CodeGenContext& context) { return NULL; }
 };
 
-class NExpression : public Node {
-};
+class NExpression : public Node {};
 
-class NStatement : public Node {
-};
+class NStatement : public Node {};
 
 class NInteger : public NExpression {
 public:
-	long long value;
-	NInteger(long long value) : value(value) { }
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+    long long value;
+    NInteger(long long value) : value(value) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NDouble : public NExpression {
 public:
-	double value;
-	NDouble(double value) : value(value) { }
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+    double value;
+    NDouble(double value) : value(value) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NIdentifier : public NExpression {
 public:
-	std::string name;
-	NIdentifier(const std::string& name) : name(name) { }
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+    std::string name;
+    NIdentifier(const std::string& name) : name(name) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NMethodCall : public NExpression {
 public:
-	const NIdentifier& id;
-	ExpressionList arguments;
-	NMethodCall(const NIdentifier& id, ExpressionList& arguments) :
-		id(id), arguments(arguments) { }
-	NMethodCall(const NIdentifier& id) : id(id) { }
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+    const NIdentifier& id;
+    ExpressionList arguments;
+    NMethodCall(const NIdentifier& id, ExpressionList& arguments) :
+        id(id), arguments(arguments) { }
+    NMethodCall(const NIdentifier& id) : id(id) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NBinaryOperator : public NExpression {
 public:
-	int op;
-	NExpression& lhs;
-	NExpression& rhs;
-	NBinaryOperator(NExpression& lhs, int op, NExpression& rhs) :
-		lhs(lhs), rhs(rhs), op(op) { }
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+    int op;
+    NExpression& lhs;
+    NExpression& rhs;
+    NBinaryOperator(NExpression& lhs, int op, NExpression& rhs) :
+        lhs(lhs), rhs(rhs), op(op) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NAssignment : public NExpression {
 public:
-	NIdentifier& lhs;
-	NExpression& rhs;
-	NAssignment(NIdentifier& lhs, NExpression& rhs) : 
-		lhs(lhs), rhs(rhs) { }
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+    NIdentifier& lhs;
+    NExpression& rhs;
+    NAssignment(NIdentifier& lhs, NExpression& rhs) : lhs(lhs), rhs(rhs) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NBlock : public NExpression {
 public:
-	StatementList statements;
-	NBlock() { }
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+    StatementList statements;
+    NBlock() { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NExpressionStatement : public NStatement {
 public:
-	NExpression& expression;
-	NExpressionStatement(NExpression& expression) : 
-		expression(expression) { }
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+    NExpression& expression;
+    NExpressionStatement(NExpression& expression) : expression(expression) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NVariableDeclaration : public NStatement {
 public:
-	NIdentifier& id;
-	NExpression *assignmentExpr;
-	NVariableDeclaration(NIdentifier& id) :
-		 id(id) { assignmentExpr = NULL; }
-	NVariableDeclaration(NIdentifier& id, NExpression *assignmentExpr) :
-		 id(id), assignmentExpr(assignmentExpr) { }
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+    NIdentifier& id;
+    NExpression *assignmentExpr;
+    NVariableDeclaration(NIdentifier& id) : id(id) { assignmentExpr = NULL; }
+    NVariableDeclaration(NIdentifier& id, NExpression *assignmentExpr) : id(id), assignmentExpr(assignmentExpr) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
+class NBool : public NExpression {
+public:
+    bool value = false;
+
+    NBool(bool val) {
+        value = val;
+    }
+
+    virtual llvm::Value *codeGen(CodeGenContext &context);
+};
+
+class NIfStatement : public NStatement {
+public:
+    NBlock *truecond;
+    NBlock *falsecond;
+    NBinaryOperator *cond;
+
+    NIfStatement(NExpression *exprNode, NBlock *true_blockNode, NBlock *false_blockNode) {
+        if (dynamic_cast<NInteger *>(exprNode)) {
+            NInteger *intNode = dynamic_cast<NInteger *>(exprNode);
+            if (intNode->value > 0) {
+                cond = reinterpret_cast<NBinaryOperator *>(new NBool(true));
+            } else {
+                cond = reinterpret_cast<NBinaryOperator *>(new NBool(false));
+            }
+        } else {
+            cond = (NBinaryOperator *) exprNode;
+        }
+        truecond = true_blockNode;
+        falsecond = false_blockNode;
+    }
+
+    NIfStatement(NExpression *exprNode, NBlock *true_blockNode) {
+        cond = dynamic_cast<NBinaryOperator *>(exprNode);
+        truecond = true_blockNode;
+        falsecond = nullptr;
+    }
+
+    virtual llvm::Value *codeGen(CodeGenContext &context);
+};

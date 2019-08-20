@@ -71,15 +71,38 @@ Value* NBinaryOperator::codeGen(CodeGenContext& context) {
     Instruction::BinaryOps instr;
     IRBuilder<> builder(context.currentBlock());
     switch (op) {
-        case PLUS: instr = Instruction::Add; goto math;
-        case MINUS: instr = Instruction::Sub; goto math;
-        case MULT: instr = Instruction::Mul; goto math;
-        case DIV: instr = Instruction::SDiv; goto math;
-        case MOD: instr = Instruction::SRem; goto math;
+        case PLUS:
+            instr = Instruction::Add;
+            goto math;
+        case MINUS:
+            instr = Instruction::Sub;
+            goto math;
+        case MULT:
+            instr = Instruction::Mul;
+            goto math;
+        case DIV:
+            instr = Instruction::SDiv;
+            goto math;
+        case MOD:
+            instr = Instruction::SRem;
+            goto math;
+        
+        case TCNE:
+            return builder.CreateICmpNE(lhs.codeGen(context), rhs.codeGen(context), "");
+        case TCEQ:
+            return builder.CreateICmpEQ(lhs.codeGen(context), rhs.codeGen(context), "");
+        case TCLE:
+            return builder.CreateICmpSLE(lhs.codeGen(context), rhs.codeGen(context), "");
+        case TCGE:
+            return builder.CreateICmpSGE(lhs.codeGen(context), rhs.codeGen(context), "");
+        case TCGT:
+            return builder.CreateICmpSGT(lhs.codeGen(context), rhs.codeGen(context), "");
+        case TCLT:
+            return builder.CreateICmpSLT(lhs.codeGen(context), rhs.codeGen(context), "");
     }
 
     return NULL;
-    math:
+math:
     return BinaryOperator::Create(instr, lhs.codeGen(context), 
     rhs.codeGen(context), "", context.currentBlock());
 }
@@ -117,8 +140,53 @@ Value* NVariableDeclaration::codeGen(CodeGenContext& context) {
     if (assignmentExpr != NULL) {
         NAssignment assn(id, *assignmentExpr);
         auto val = assn.codeGen(context);
-
+        
         return val;
     }
     return nullptr;
+}
+
+Value *NBool::codeGen(CodeGenContext &context) {
+    cout << "Creating code for: bool" << endl;
+    IRBuilder<> builder(context.currentBlock());
+    if (value)
+        return builder.getTrue();
+    else
+        return builder.getFalse();
+}
+
+Value *NIfStatement::codeGen(CodeGenContext &context) {
+    Function *function = context.currentBlock()->getParent();
+
+    BasicBlock *thenBlock = BasicBlock::Create(MyContext, "then", function);
+    BasicBlock *elseBlock = BasicBlock::Create(MyContext, "else");
+    BasicBlock *mergeBlock = BasicBlock::Create(MyContext, "cont");
+
+    function->getBasicBlockList().push_back(thenBlock);
+    Value *condValue = cond->codeGen(context);
+
+    if (falsecond != nullptr)
+        BranchInst::Create(thenBlock, elseBlock, condValue, context.currentBlock());
+    else
+        BranchInst::Create(thenBlock, mergeBlock, condValue, context.currentBlock());
+
+    context.pushBlock(thenBlock);
+    Value *thenValue = truecond->codeGen(context);
+    BranchInst::Create(mergeBlock, context.currentBlock());
+    context.popBlock();
+    
+
+    if (falsecond != nullptr) {
+        function->getBasicBlockList().push_back(elseBlock);
+        context.pushBlock(elseBlock);
+        Value *elseValue = falsecond->codeGen(context);
+        
+        BranchInst::Create(mergeBlock, context.currentBlock());
+        context.popBlock();
+    }
+
+    function->getBasicBlockList().push_back(mergeBlock);
+    context.pushBlock(mergeBlock);
+
+    return function;
 }
