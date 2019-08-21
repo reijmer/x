@@ -55,9 +55,9 @@ program : stmts { programBlock = $1; }
         | %empty { programBlock = new NBlock(); }
         ;
 
-stmts	: stmt { $$ = new NBlock(); $$->statements.push_back($<stmt>1); }
-		| stmts stmt { $1->statements.push_back($<stmt>2); }
-		;
+stmts   : stmt { $$ = new NBlock(); $$->statements.push_back($<stmt>1); }
+        | stmts stmt { $1->statements.push_back($<stmt>2); }
+        ;
 
 block   : INDENT stmts DEDENT { $$ = $2; }
         ;

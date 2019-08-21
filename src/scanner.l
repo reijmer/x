@@ -45,7 +45,7 @@ float       -?[0-9]*"."[0-9]+
 %x initial
 %x indent
 %x comment
-%x string
+%x s_string
 
 %%
 
@@ -181,15 +181,15 @@ int indent_caller = 0;
             return(INTEGER);
 }
 
-\"                          BEGIN(string);
-<string>{
+\"                          BEGIN(s_string);
+<s_string>{
   \n                        {}
   <<EOF>>                   {}
   ([^\\\"]|\\.)*            { 
         yylval.string = new std::string(yytext, yyleng);
         return(STRING);
     }
-  \"                        BEGIN(INITIAL);
+  \"                        BEGIN(0);
   .                         ;
 }
 
