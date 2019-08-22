@@ -18,15 +18,10 @@ run `make` in src/
 
 ## status
 
-Basic variable declaration and arithmetic is working. Printing integer values also works.
-
-limited support for if/else statements
-
 Working examples are included in `examples/`.
 
 
 ## short-term tasks
 
-- add string type
-- extend print function
+- add functions
 - make this readme nicer

@@ -1,14 +1,15 @@
+
 x = 10
 
-print(x + 6)
+y = False
 
 """
-this is a multi-line comment
-a = 29
+multiline comment
+comment
 """
 
-if True:
-    x = 6
-    print(x) # comment
 
-
+if y:
+    print("%d", x) # comment
+else:
+    print("hello")

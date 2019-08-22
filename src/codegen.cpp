@@ -42,10 +42,16 @@ Value* NString::codeGen(CodeGenContext& context) {
 }
 
 Value* NIdentifier::codeGen(CodeGenContext& context) {
-    if (context.locals().find(name) == context.locals().end()) {
-        return NULL;
+    std::vector<CodeGenBlock *>& blocks = context.getBlocks();
+
+    for (auto block = blocks.rbegin(); block != blocks.rend(); ++block) {
+        auto scope = *block;
+        std::map<std::string, Value*> names = scope->locals;
+        if (names.find(name) != names.end()) {
+            return new LoadInst(names[name], "", false, context.currentBlock());
+        }
     }
-    return new LoadInst(context.locals()[name], "", false, context.currentBlock());
+    return NULL;
 }
 
 Value* NMethodCall::codeGen(CodeGenContext& context) {
@@ -108,8 +114,6 @@ Value* NBooleanOperator::codeGen(CodeGenContext& context) {
     }
     return NULL;
 }
-
-
 
 Value* NBlock::codeGen(CodeGenContext& context) {
     StatementList::const_iterator it;
