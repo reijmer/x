@@ -1,15 +1,24 @@
 
 x = 10
+y = True
 
-y = False
+def func(x):
+    """
+    docstring?
+    """
+    print(x)
 
-"""
-multiline comment
-comment
-"""
+def add(a, b):
+    result = a + b
+
+    print("%d", result)
 
 
 if y:
-    print("%d", x) # comment
+    func("test")
 else:
-    print("hello")
+    print("%d", x)
+
+
+# add two numbers and print
+add(30, 55)

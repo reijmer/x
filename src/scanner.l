@@ -137,10 +137,10 @@ int indent_caller = 0;
 \n          { current_line_indent = 0; indent_caller = YY_START; BEGIN(indent); }
 
 
-":"        	{ return((yylval.token = COLON)); }
-","        	{ return((yylval.token = COMMA)); }
-"("        	{ return((yylval.token = LPAREN)); }
-")"        	{ return((yylval.token = RPAREN)); }
+":"         { return((yylval.token = COLON)); }
+","         { return((yylval.token = COMMA)); }
+"("         { return((yylval.token = LPAREN)); }
+")"         { return((yylval.token = RPAREN)); }
 "{"         { return((yylval.token = LBRACE)); }
 "}"         { return((yylval.token = RBRACE)); }
 
@@ -150,7 +150,7 @@ int indent_caller = 0;
 "/"        	{ return((yylval.token = DIV)); }
 "%"        	{ return((yylval.token = MOD)); }
 
-"="        	{ return((yylval.token = ASSIGN)); }
+"="         { return((yylval.token = ASSIGN)); }
 "!=="       { return((yylval.token = TCNE)); }
 "=="        { return((yylval.token = TCEQ)); }
 ">"         { return((yylval.token = TCGT)); }
@@ -158,8 +158,10 @@ int indent_caller = 0;
 ">="        { return((yylval.token = TCGE)); }
 "<="        { return((yylval.token = TCLE)); }
 
-"if"		{ return((yylval.token = IF)); }
+"if"        { return((yylval.token = IF)); }
 "else"      { return((yylval.token = ELSE)); }
+"def"       { return((yylval.token = DEF)); }
+"return"    { return((yylval.token = RETURN)); }
 
 
 "True"      { return((yylval.token = TRUE)); }

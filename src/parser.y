@@ -20,6 +20,7 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
     NIdentifier *ident;
     NVariableDeclaration *var_decl;
     std::vector<NExpression*> *exprvec;
+    std::vector<NVariableDeclaration*> *varvec;
 
     std::string *string;
     int token;
@@ -28,7 +29,7 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 
 %token <token> TCEQ TCNE TCLT TCLE TCGT TCGE ASSIGN
 %token <token> LPAREN RPAREN LBRACE RBRACE COMMA COLON
-%token <token> PLUS MINUS MULT DIV MOD INDENT DEDENT IF ELSE
+%token <token> PLUS MINUS MULT DIV MOD INDENT DEDENT IF ELSE DEF RETURN
 %token <token> TRUE FALSE
 
 %token <string> IDENTIFIER INTEGER FLOAT STRING
@@ -36,8 +37,9 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 %type <ident> ident
 %type <expr> numeric expr func_call bool string
 %type <exprvec> call_args
+%type <varvec> decl_args
 %type <block> program stmts block
-%type <stmt> stmt var_decl if_stmt
+%type <stmt> stmt var_decl if_stmt func_decl
 %type <token> bin_op bool_op
 
 %left PLUS MINUS
@@ -65,6 +67,7 @@ block   : INDENT stmts DEDENT { $$ = $2; }
 stmt    : expr { $$ = new NExpressionStatement(*$1); }
         | var_decl
         | if_stmt
+        | func_decl
         ;
 	
 ident   : IDENTIFIER { $$ = new NIdentifier(*$1); delete $1;}
@@ -82,11 +85,19 @@ string  : STRING { $$ = new NString($1->c_str()); delete $1; }
         ;
 	
 var_decl    : ident ASSIGN expr { $$ = new NVariableDeclaration(*$1, $3); }
+            | ident { $$ = new NVariableDeclaration(*$1);}
             ;
 
 if_stmt : IF expr COLON block { $$ = new NIfStatement($2, $4); }
         | IF expr COLON block ELSE COLON block { $$ = new NIfStatement($2, $4, $7); }
         ;
+
+func_decl   : DEF ident LPAREN decl_args RPAREN COLON block { $$ = new NFunctionDeclaration(*$2, *$4, *$7); delete $4; }
+            ;
+
+decl_args   : var_decl { $$ = new VariableList(); $$->push_back($<var_decl>1); }
+            | decl_args COMMA var_decl { $1->push_back($<var_decl>3); }
+            | %empty { $$ = new VariableList(); }
 	
 func_call   : ident LPAREN call_args RPAREN { $$ = new NMethodCall(*$1, *$3); delete $3; }
             ;

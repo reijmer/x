@@ -129,17 +129,12 @@ Value* NExpressionStatement::codeGen(CodeGenContext& context) {
 }
 
 Value* NAssignment::codeGen(CodeGenContext& context) {
-    if (context.locals().find(lhs.name) == context.locals().end()) {
-        Value* value = rhs.codeGen(context);
-        Type* ty = value->getType();
-        AllocaInst* var = new AllocaInst(ty, 0, lhs.name.c_str(), context.currentBlock());
-        context.locals()[lhs.name] = var;
+    Value* value = rhs.codeGen(context);
+    Type* ty = value->getType();
+    AllocaInst* var = new AllocaInst(ty, 0, lhs.name.c_str(), context.currentBlock());
+    context.locals()[lhs.name] = var;
 
-        return new StoreInst(value, context.locals()[lhs.name], false, context.currentBlock());
-
-    } else {
-        return new StoreInst(rhs.codeGen(context), context.locals()[lhs.name], false, context.currentBlock());
-    }
+    return new StoreInst(value, context.locals()[lhs.name], false, context.currentBlock());
 }
 
 Value* NVariableDeclaration::codeGen(CodeGenContext& context) {
@@ -148,8 +143,13 @@ Value* NVariableDeclaration::codeGen(CodeGenContext& context) {
         auto val = assn.codeGen(context);
         
         return val;
+    } else {
+        // set default type to int, can be changed on assignment.
+        AllocaInst *alloc = new AllocaInst(Type::getInt64Ty(MyContext), 0, id.name.c_str(), context.currentBlock());
+	    context.locals()[id.name] = alloc;
+
+        return alloc;
     }
-    return nullptr;
 }
 
 Value *NBool::codeGen(CodeGenContext &context) {
@@ -192,5 +192,38 @@ Value *NIfStatement::codeGen(CodeGenContext &context) {
     function->getBasicBlockList().push_back(mergeBlock);
     context.pushBlock(mergeBlock);
 
+    return function;
+}
+
+Value* NFunctionDeclaration::codeGen(CodeGenContext& context) {
+    std::vector<Type*> argTypes;
+    VariableList::const_iterator it;
+
+    for (it = arguments.begin(); it != arguments.end(); it++) {
+        argTypes.push_back(Type::getInt64Ty(MyContext));//typeOf((**it).type));
+    }
+
+    FunctionType *ftype = FunctionType::get(Type::getVoidTy(MyContext), makeArrayRef(argTypes), false);
+    Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, id.name.c_str(), context.module);
+    BasicBlock *bblock = BasicBlock::Create(MyContext, "entry", function, 0);
+
+    context.pushBlock(bblock);
+
+    Function::arg_iterator argsValues = function->arg_begin();
+    Value* argumentValue;
+
+    for (it = arguments.begin(); it != arguments.end(); it++) {
+        //(**it).codeGen(context);
+        AllocaInst *alloc = new AllocaInst(Type::getInt64Ty(MyContext), 0, (*it)->id.name.c_str(), context.currentBlock());
+	    context.locals()[(*it)->id.name] = alloc;
+
+        argumentValue = &*argsValues++;
+        StoreInst *inst = new StoreInst(argumentValue, context.locals()[(*it)->id.name], false, bblock);
+    }
+
+    block.codeGen(context);
+    ReturnInst::Create(MyContext, context.getCurrentReturnValue(), context.currentBlock() );
+
+    context.popBlock();
     return function;
 }
