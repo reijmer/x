@@ -68,6 +68,7 @@ stmt    : expr { $$ = new NExpressionStatement(*$1); }
         | var_decl
         | if_stmt
         | func_decl
+        | RETURN expr { $$ = new NReturnStatement(*$2); }
         ;
 	
 ident   : IDENTIFIER { $$ = new NIdentifier(*$1); delete $1;}

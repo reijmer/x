@@ -13,6 +13,8 @@ def add(a, b):
 
     print("%d", result)
 
+    return result
+
 
 if y:
     func("test")
@@ -21,4 +23,6 @@ else:
 
 
 # add two numbers and print
-add(30, 55)
+test = add(30, 55)
+
+print("%d", test)

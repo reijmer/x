@@ -106,7 +106,7 @@ public:
     NIdentifier& id;
     NExpression *assignmentExpr;
     NVariableDeclaration(NIdentifier& id) : id(id) { assignmentExpr = NULL; }
-    NVariableDeclaration(NIdentifier& id, NExpression *assignmentExpr) : id(id), assignmentExpr(assignmentExpr) { }
+    NVariableDeclaration(NIdentifier& id, NExpression *assignmentExpr) : id(id), assignmentExpr(assignmentExpr) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -143,6 +143,13 @@ public:
 	NBlock& block;
 	NFunctionDeclaration(const NIdentifier& id, 
 			const VariableList& arguments, NBlock& block) :
-		type(type), id(id), arguments(arguments), block(block) { }
+		type(type), id(id), arguments(arguments), block(block) {}
 	virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class NReturnStatement : public NStatement {
+public:
+    NExpression& expression;
+    NReturnStatement(NExpression& expression) : expression(expression) {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };

@@ -203,7 +203,7 @@ Value* NFunctionDeclaration::codeGen(CodeGenContext& context) {
         argTypes.push_back(Type::getInt64Ty(MyContext));//typeOf((**it).type));
     }
 
-    FunctionType *ftype = FunctionType::get(Type::getVoidTy(MyContext), makeArrayRef(argTypes), false);
+    FunctionType *ftype = FunctionType::get(Type::getInt64Ty(MyContext), makeArrayRef(argTypes), false);
     Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, id.name.c_str(), context.module);
     BasicBlock *bblock = BasicBlock::Create(MyContext, "entry", function, 0);
 
@@ -226,4 +226,10 @@ Value* NFunctionDeclaration::codeGen(CodeGenContext& context) {
 
     context.popBlock();
     return function;
+}
+
+Value* NReturnStatement::codeGen(CodeGenContext& context) {
+	Value *returnValue = expression.codeGen(context);
+	context.setCurrentReturnValue(returnValue);
+	return returnValue;
 }
