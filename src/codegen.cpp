@@ -129,8 +129,21 @@ Value* NExpressionStatement::codeGen(CodeGenContext& context) {
 }
 
 Value* NAssignment::codeGen(CodeGenContext& context) {
+
     Value* value = rhs.codeGen(context);
     Type* ty = value->getType();
+    
+    std::vector<CodeGenBlock *>& blocks = context.getBlocks();
+
+    // TODO: move to separate function (for identifiers)
+    for (auto block = blocks.rbegin(); block != blocks.rend(); ++block) {
+        auto scope = *block;
+        std::map<std::string, Value*> names = scope->locals;
+        if (names.find(lhs.name) != names.end()) {
+            return new StoreInst(value, scope->locals[lhs.name], false, context.currentBlock());
+        }
+    }
+    
     AllocaInst* var = new AllocaInst(ty, 0, lhs.name.c_str(), context.currentBlock());
     context.locals()[lhs.name] = var;
 
@@ -232,4 +245,46 @@ Value* NReturnStatement::codeGen(CodeGenContext& context) {
 	Value *returnValue = expression.codeGen(context);
 	context.setCurrentReturnValue(returnValue);
 	return returnValue;
+}
+
+Value* NWhileLoop::codeGen(CodeGenContext& context) {
+    Function *function = context.currentBlock()->getParent();
+    BasicBlock* firstCondBlock = BasicBlock::Create(MyContext, "firstcond", function);
+    BasicBlock* condBlock = BasicBlock::Create(MyContext, "cond");
+    BasicBlock* loopBlock = BasicBlock::Create(MyContext, "loop");
+    BasicBlock* elseBlock = BasicBlock::Create(MyContext, "else");
+    BasicBlock* mergeBlock = BasicBlock::Create(MyContext, "merge");
+
+    BranchInst::Create(firstCondBlock, context.currentBlock());
+    context.pushBlock(firstCondBlock);
+    Value* firstCondValue = this->cond->codeGen(context);
+    
+    BranchInst::Create(loopBlock, elseBlock, firstCondValue, context.currentBlock());
+
+    function->getBasicBlockList().push_back(condBlock);
+    context.popBlock();
+    context.pushBlock(condBlock);
+    Value* condValue = this->cond->codeGen(context);
+
+    BranchInst::Create(loopBlock, mergeBlock, condValue, context.currentBlock());
+
+    function->getBasicBlockList().push_back(loopBlock);
+    context.popBlock();
+    context.pushBlock(loopBlock);
+    Value* loopValue = this->loopBlock->codeGen(context);
+
+    BranchInst::Create(condBlock, context.currentBlock());
+
+    function->getBasicBlockList().push_back(elseBlock);
+    context.popBlock();
+    context.pushBlock(elseBlock);
+    if (this->elseBlock != nullptr) {
+        Value* elseValue = this->elseBlock->codeGen(context);
+    }
+    BranchInst::Create(mergeBlock, context.currentBlock());
+    function->getBasicBlockList().push_back(mergeBlock);
+    context.popBlock();
+    context.setCurrentBlock(mergeBlock);
+
+    return mergeBlock;
 }

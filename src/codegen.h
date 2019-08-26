@@ -29,6 +29,7 @@ public:
     BasicBlock *block;
     Value *returnValue;
     std::map<std::string, Value*> locals;
+
 };
 
 class CodeGenContext {
@@ -73,5 +74,9 @@ public:
 
     Value* getCurrentReturnValue() {
         return blocks[blocks.size() - 1]->returnValue;
+    }
+
+    void setCurrentBlock(BasicBlock * block) {
+        blocks[blocks.size() - 1]->block = block;
     }
 };

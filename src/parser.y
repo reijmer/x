@@ -29,7 +29,7 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 
 %token <token> TCEQ TCNE TCLT TCLE TCGT TCGE ASSIGN
 %token <token> LPAREN RPAREN LBRACE RBRACE COMMA COLON
-%token <token> PLUS MINUS MULT DIV MOD INDENT DEDENT IF ELSE DEF RETURN
+%token <token> PLUS MINUS MULT DIV MOD INDENT DEDENT IF ELSE DEF RETURN WHILE
 %token <token> TRUE FALSE
 
 %token <string> IDENTIFIER INTEGER FLOAT STRING
@@ -39,7 +39,7 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 %type <exprvec> call_args
 %type <varvec> decl_args
 %type <block> program stmts block
-%type <stmt> stmt var_decl if_stmt func_decl
+%type <stmt> stmt var_decl if_stmt func_decl while_loop
 %type <token> bin_op bool_op
 
 %left PLUS MINUS
@@ -68,6 +68,7 @@ stmt    : expr { $$ = new NExpressionStatement(*$1); }
         | var_decl
         | if_stmt
         | func_decl
+        | while_loop
         | RETURN expr { $$ = new NReturnStatement(*$2); }
         ;
 	
@@ -106,6 +107,10 @@ func_call   : ident LPAREN call_args RPAREN { $$ = new NMethodCall(*$1, *$3); de
 call_args   : expr { $$ = new ExpressionList(); $$->push_back($1); }
             | call_args COMMA expr { $1->push_back($3); }
             | %empty { $$ = new ExpressionList(); }
+            ;
+
+while_loop  : WHILE expr COLON block { $$ = new NWhileLoop($2, $4); }
+            | WHILE expr COLON block ELSE COLON block { $$ = new NWhileLoop($2, $4, $7); }
             ;
 
 expr    : ident { $<ident>$ = $1; }

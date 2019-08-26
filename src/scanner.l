@@ -162,6 +162,7 @@ int indent_caller = 0;
 "else"      { return((yylval.token = ELSE)); }
 "def"       { return((yylval.token = DEF)); }
 "return"    { return((yylval.token = RETURN)); }
+"while"     { return((yylval.token = WHILE)); }
 
 
 "True"      { return((yylval.token = TRUE)); }

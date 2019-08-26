@@ -23,10 +23,17 @@ Working examples are included in `examples/`.
 
 ## short-term tasks
 
+priority:
 - error messages
-- add while loops
-- add lists and dictionaries
-- file imports
+- improve string support (single quoted strings and line breaks etc.)
 - find a good way to test
 
+then:
+- add break for while loop
+- add all python keywords to lexer
+- add lists and dictionaries
+- file imports
+
+
+tasks i'll probably never get to:
 - make this readme nicer

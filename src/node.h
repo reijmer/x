@@ -54,8 +54,8 @@ public:
     const NIdentifier& id;
     ExpressionList arguments;
     NMethodCall(const NIdentifier& id, ExpressionList& arguments) :
-        id(id), arguments(arguments) { }
-    NMethodCall(const NIdentifier& id) : id(id) { }
+        id(id), arguments(arguments) {}
+    NMethodCall(const NIdentifier& id) : id(id) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -97,7 +97,7 @@ public:
 class NExpressionStatement : public NStatement {
 public:
     NExpression& expression;
-    NExpressionStatement(NExpression& expression) : expression(expression) { }
+    NExpressionStatement(NExpression& expression) : expression(expression) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -141,8 +141,7 @@ public:
 	const NIdentifier& id;
 	VariableList arguments;
 	NBlock& block;
-	NFunctionDeclaration(const NIdentifier& id, 
-			const VariableList& arguments, NBlock& block) :
+	NFunctionDeclaration(const NIdentifier& id, const VariableList& arguments, NBlock& block) :
 		type(type), id(id), arguments(arguments), block(block) {}
 	virtual llvm::Value* codeGen(CodeGenContext& context);
 };
@@ -152,4 +151,18 @@ public:
     NExpression& expression;
     NReturnStatement(NExpression& expression) : expression(expression) {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class NWhileLoop : public NStatement {
+public:
+    NBlock *loopBlock;
+    NBlock *elseBlock;
+    NBooleanOperator *cond;
+
+    NWhileLoop(NExpression *exprNode, NBlock *blockNode, NBlock *elseBlock = nullptr) :
+            cond((NBooleanOperator*)exprNode),
+            loopBlock(blockNode),
+            elseBlock(elseBlock) {}
+
+    virtual llvm::Value *codeGen(CodeGenContext &context);
 };
