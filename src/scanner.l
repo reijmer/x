@@ -46,6 +46,7 @@ float       -?[0-9]*"."[0-9]+
 %x indent
 %x comment
 %x s_string
+%x d_string
 
 %%
 
@@ -185,6 +186,8 @@ int indent_caller = 0;
 }
 
 \"                          BEGIN(s_string);
+\'                          BEGIN(d_string);
+
 <s_string>{
   \n                        {}
   <<EOF>>                   {}
@@ -193,6 +196,17 @@ int indent_caller = 0;
         return(STRING);
     }
   \"                        BEGIN(0);
+  .                         ;
+}
+
+<d_string>{
+  \n                        {}
+  <<EOF>>                   {}
+  ([^\\\']|\\.)*            { 
+        yylval.string = new std::string(yytext, yyleng);
+        return(STRING);
+    }
+  \'                        BEGIN(0);
   .                         ;
 }
 
