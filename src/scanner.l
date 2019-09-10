@@ -159,15 +159,42 @@ int indent_caller = 0;
 ">="        { return((yylval.token = TCGE)); }
 "<="        { return((yylval.token = TCLE)); }
 
-"if"        { return((yylval.token = IF)); }
-"else"      { return((yylval.token = ELSE)); }
-"def"       { return((yylval.token = DEF)); }
+
+"class"     { return((yylval.token = CLASS)); }
+"finally"   { return((yylval.token = FINALLY)); }
+"is"        { return((yylval.token = IS)); }
 "return"    { return((yylval.token = RETURN)); }
+"continue"  { return((yylval.token = CONTINUE)); }
+"for"       { return((yylval.token = FOR)); }
+"lambda"    { return((yylval.token = LAMBDA)); }
+"try"       { return((yylval.token = TRY)); }
+"def"       { return((yylval.token = DEF)); }
+"from"      { return((yylval.token = FROM)); }
+"nonlocal"  { return((yylval.token = NONLOCAL)); }
 "while"     { return((yylval.token = WHILE)); }
+"and"       { return((yylval.token = AND)); }
+"del"       { return((yylval.token = DEL)); }
+"global"    { return((yylval.token = GLOBAL)); }
+"not"       { return((yylval.token = NOT)); }
+"with"      { return((yylval.token = WITH)); }
+"as"        { return((yylval.token = AS)); }
+"elif"      { return((yylval.token = ELIF)); }
+"if"        { return((yylval.token = IF)); }
+"or"        { return((yylval.token = OR)); }
+"yield"     { return((yylval.token = YIELD)); }
+"assert"    { return((yylval.token = ASSERT)); }
+"else"      { return((yylval.token = ELSE)); }
+"import"    { return((yylval.token = IMPORT)); }
+"pass"      { return((yylval.token = PASS)); }
+"break"     { return((yylval.token = BREAK)); }
+"except"    { return((yylval.token = EXCEPT)); }
+"in"        { return((yylval.token = IN)); }
+"raise"     { return((yylval.token = RAISE)); }
 
 
 "True"      { return((yylval.token = TRUE)); }
 "False"     { return((yylval.token = FALSE)); }
+"None"      { return((yylval.token = NONE)); }
 
 
 {ident}   	{

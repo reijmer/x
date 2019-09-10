@@ -29,9 +29,14 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 
 %token <token> TCEQ TCNE TCLT TCLE TCGT TCGE ASSIGN
 %token <token> LPAREN RPAREN LBRACE RBRACE COMMA COLON
-%token <token> PLUS MINUS MULT DIV MOD INDENT DEDENT IF ELSE DEF RETURN WHILE
-%token <token> TRUE FALSE
+%token <token> PLUS MINUS MULT DIV MOD INDENT
+                DEDENT IF ELSE DEF RETURN WHILE CLASS
+                IN OR AS IS BREAK TRY EXCEPT RAISE FINALLY
+                GLOBAL DEL CONTINUE FOR IMPORT PASS YIELD
+                ELIF LAMBDA ASSERT WITH NOT NONLOCAL FROM
+                AND
 
+%token <token> TRUE FALSE NONE
 %token <string> IDENTIFIER INTEGER FLOAT STRING
  
 %type <ident> ident
