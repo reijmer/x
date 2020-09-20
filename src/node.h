@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <llvm/IR/Value.h>
 
 class CodeGenContext;
 class NStatement;
@@ -14,7 +13,6 @@ typedef std::vector<NVariableDeclaration*> VariableList;
 class Node {
 public:
     virtual ~Node() {}
-    virtual llvm::Value* codeGen(CodeGenContext& context) { return NULL; }
 };
 
 class NExpression : public Node {};
@@ -25,28 +23,24 @@ class NInteger : public NExpression {
 public:
     long long value;
     NInteger(long long value) : value(value) {}
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NDouble : public NExpression {
 public:
     double value;
     NDouble(double value) : value(value) {}
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NIdentifier : public NExpression {
 public:
     std::string name;
     NIdentifier(const std::string& name) : name(name) {}
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NString : public NExpression {
 public:
     std::string value;
     NString(const std::string& value) : value(value) {}
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NMethodCall : public NExpression {
@@ -56,7 +50,6 @@ public:
     NMethodCall(const NIdentifier& id, ExpressionList& arguments) :
         id(id), arguments(arguments) {}
     NMethodCall(const NIdentifier& id) : id(id) {}
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NBinaryOperator : public NExpression {
@@ -66,7 +59,6 @@ public:
     NExpression& rhs;
     NBinaryOperator(NExpression& lhs, int op, NExpression& rhs) :
         lhs(lhs), rhs(rhs), op(op) {}
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NBooleanOperator : public NExpression {
@@ -76,7 +68,6 @@ public:
     NExpression& rhs;
     NBooleanOperator(NExpression& lhs, int op, NExpression& rhs) :
         lhs(lhs), rhs(rhs), op(op) {}
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NAssignment : public NExpression {
@@ -84,21 +75,18 @@ public:
     NIdentifier& lhs;
     NExpression& rhs;
     NAssignment(NIdentifier& lhs, NExpression& rhs) : lhs(lhs), rhs(rhs) {}
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NBlock : public NExpression {
 public:
     StatementList statements;
     NBlock() { }
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NExpressionStatement : public NStatement {
 public:
     NExpression& expression;
     NExpressionStatement(NExpression& expression) : expression(expression) {}
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NVariableDeclaration : public NStatement {
@@ -107,7 +95,6 @@ public:
     NExpression *assignmentExpr;
     NVariableDeclaration(NIdentifier& id) : id(id) { assignmentExpr = NULL; }
     NVariableDeclaration(NIdentifier& id, NExpression *assignmentExpr) : id(id), assignmentExpr(assignmentExpr) {}
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NBool : public NExpression {
@@ -117,8 +104,6 @@ public:
     NBool(bool val) {
         value = val;
     }
-
-    virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
 class NIfStatement : public NStatement {
@@ -132,7 +117,6 @@ public:
             truecond(true_blockNode),
             falsecond(false_blockNode) {}
 
-    virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
 class NFunctionDeclaration : public NStatement {
@@ -143,14 +127,12 @@ public:
 	NBlock& block;
 	NFunctionDeclaration(const NIdentifier& id, const VariableList& arguments, NBlock& block) :
 		type(type), id(id), arguments(arguments), block(block) {}
-	virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NReturnStatement : public NStatement {
 public:
     NExpression& expression;
     NReturnStatement(NExpression& expression) : expression(expression) {}
-    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NWhileLoop : public NStatement {
@@ -164,5 +146,4 @@ public:
             loopBlock(blockNode),
             elseBlock(elseBlock) {}
 
-    virtual llvm::Value *codeGen(CodeGenContext &context);
 };
