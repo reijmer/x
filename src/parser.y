@@ -5,7 +5,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-NBlock *programBlock;
+Block *programBlock;
 
 extern int yylex();
 void yyerror(const char *s) { std::printf("Error: %s \n", s);}
@@ -14,13 +14,13 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 
 %union {
     Node *node;
-    NBlock *block;
-    NExpression *expr;
-    NStatement *stmt;
-    NIdentifier *ident;
-    NVariableDeclaration *var_decl;
-    std::vector<NExpression*> *exprvec;
-    std::vector<NVariableDeclaration*> *varvec;
+    Block *block;
+    Expression *expr;
+    Statement *stmt;
+    Identifier *ident;
+    VariableDeclaration *var_decl;
+    std::vector<Expression*> *exprvec;
+    std::vector<VariableDeclaration*> *varvec;
 
     std::string *string;
     int token;
@@ -59,54 +59,54 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 %%
 
 program : stmts { programBlock = $1; }
-        | %empty { programBlock = new NBlock(); }
+        | %empty { programBlock = new Block(); }
         ;
 
-stmts   : stmt { $$ = new NBlock(); $$->statements.push_back($<stmt>1); }
+stmts   : stmt { $$ = new Block(); $$->statements.push_back($<stmt>1); }
         | stmts stmt { $1->statements.push_back($<stmt>2); }
         ;
 
 block   : INDENT stmts DEDENT { $$ = $2; }
         ;
 
-stmt    : expr { $$ = new NExpressionStatement(*$1); }
+stmt    : expr { $$ = new ExpressionStatement(*$1); }
         | var_decl
         | if_stmt
         | func_decl
         | while_loop
-        | RETURN expr { $$ = new NReturnStatement(*$2); }
+        | RETURN expr { $$ = new ReturnStatement(*$2); }
         ;
 	
-ident   : IDENTIFIER { $$ = new NIdentifier(*$1); delete $1;}
+ident   : IDENTIFIER { $$ = new Identifier(*$1); delete $1;}
         ;
 
-numeric : INTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
-        | FLOAT { $$ = new NDouble(atof($1->c_str())); delete $1; }
+numeric : INTEGER { $$ = new Integer(atol($1->c_str())); delete $1; }
+        | FLOAT { $$ = new Double(atof($1->c_str())); delete $1; }
         ;
 
-bool    : TRUE { $$ = new NBool(true); }
-        | FALSE { $$ = new NBool(false); }
+bool    : TRUE { $$ = new Bool(true); }
+        | FALSE { $$ = new Bool(false); }
         ;
 
-string  : STRING { $$ = new NString($1->c_str()); delete $1; }
+string  : STRING { $$ = new String($1->c_str()); delete $1; }
         ;
 	
-var_decl    : ident ASSIGN expr { $$ = new NVariableDeclaration(*$1, $3); }
-            | ident { $$ = new NVariableDeclaration(*$1);}
+var_decl    : ident ASSIGN expr { $$ = new VariableDeclaration(*$1, $3); }
+            | ident { $$ = new VariableDeclaration(*$1);}
             ;
 
-if_stmt : IF expr COLON block { $$ = new NIfStatement($2, $4); }
-        | IF expr COLON block ELSE COLON block { $$ = new NIfStatement($2, $4, $7); }
+if_stmt : IF expr COLON block { $$ = new IfStatement($2, $4); }
+        | IF expr COLON block ELSE COLON block { $$ = new IfStatement($2, $4, $7); }
         ;
 
-func_decl   : DEF ident LPAREN decl_args RPAREN COLON block { $$ = new NFunctionDeclaration(*$2, *$4, *$7); delete $4; }
+func_decl   : DEF ident LPAREN decl_args RPAREN COLON block { $$ = new FunctionDeclaration(*$2, *$4, *$7); delete $4; }
             ;
 
 decl_args   : var_decl { $$ = new VariableList(); $$->push_back($<var_decl>1); }
             | decl_args COMMA var_decl { $1->push_back($<var_decl>3); }
             | %empty { $$ = new VariableList(); }
 	
-func_call   : ident LPAREN call_args RPAREN { $$ = new NMethodCall(*$1, *$3); delete $3; }
+func_call   : ident LPAREN call_args RPAREN { $$ = new MethodCall(*$1, *$3); delete $3; }
             ;
 
 call_args   : expr { $$ = new ExpressionList(); $$->push_back($1); }
@@ -114,17 +114,17 @@ call_args   : expr { $$ = new ExpressionList(); $$->push_back($1); }
             | %empty { $$ = new ExpressionList(); }
             ;
 
-while_loop  : WHILE expr COLON block { $$ = new NWhileLoop($2, $4); }
-            | WHILE expr COLON block ELSE COLON block { $$ = new NWhileLoop($2, $4, $7); }
+while_loop  : WHILE expr COLON block { $$ = new WhileLoop($2, $4); }
+            | WHILE expr COLON block ELSE COLON block { $$ = new WhileLoop($2, $4, $7); }
             ;
 
 expr    : ident { $<ident>$ = $1; }
         | numeric
         | bool
         | string
-        | ident ASSIGN expr { $$ = new NAssignment(*$<ident>1, *$3); }
-        | expr bin_op expr { $$ = new NBinaryOperator(*$1, $2, *$3); }
-        | expr bool_op expr { $$ = new NBooleanOperator(*$1, $2, *$3); }
+        | ident ASSIGN expr { $$ = new Assignment(*$<ident>1, *$3); }
+        | expr bin_op expr { $$ = new BinaryOperator(*$1, $2, *$3); }
+        | expr bool_op expr { $$ = new BooleanOperator(*$1, $2, *$3); }
         | LPAREN expr RPAREN { $$ = $2; }
         | func_call
         ;
