@@ -1,41 +1,40 @@
 #include <iostream>
 #include <vector>
 
-class Statement;
-class Expression;
-class VariableDeclaration;
-
-typedef std::vector<Statement*> StatementList;
-typedef std::vector<Expression*> ExpressionList;
-typedef std::vector<VariableDeclaration*> VariableList;
-
+#define SYMTABSIZE  50
+#define IDLENGTH    15
+#define NOTHING     -1
+#define IDENTOFFSET 2
 
 enum NodeType {
-    Expression,
-    Statement
-}
-
-
-
-class Node {
-
-    public:
-        Node(std::string name, std::string value, NodeType *type, Node* left, Node* right) :
-            name(name),
-            value(value),
-            type(type),
-            left(left),
-            right(right) {}
-        
-        virtual ~Node() {}
-
-
-    private:
-        
-        std::string name;
-        std::string value;
-
-        NodeType type;
-        Node *left;
-        Node *right;
+    PROGRAM,
+    STATEMENTS,
+    STATEMENT,
+    EXPRESSION
 };
+
+struct Node {
+    int identifier;
+    int value;
+    struct Node *left;
+    struct Node *center;
+    struct Node *right;
+};
+
+
+typedef struct Node TREE_NODE;
+typedef TREE_NODE *TERNARY_TREE;
+
+
+TERNARY_TREE create_node(int, int, TERNARY_TREE, TERNARY_TREE, TERNARY_TREE);
+
+
+struct symTabeNode {
+    char identifier[IDLENGTH];
+};
+
+typedef struct symTabeNode SYMTABNODE;
+typedef SYMTABNODE *SYMTABNODEPTR;
+
+
+SYMTABNODE symTab[SYMTABSIZE];

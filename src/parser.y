@@ -5,25 +5,18 @@
 
 #include <cstdio>
 #include <cstdlib>
-Block *programBlock;
+
+TERNARY_TREE *programBlock;
 
 extern int yylex();
 void yyerror(const char *s) { std::printf("Error: %s \n", s);}
+
 %}
 
 
 %union {
-    Node *node;
-    Block *block;
-    Expression *expr;
-    Statement *stmt;
-    Identifier *ident;
-    VariableDeclaration *var_decl;
-    std::vector<Expression*> *exprvec;
-    std::vector<VariableDeclaration*> *varvec;
-
-    std::string *string;
-    int token;
+    TERNARY_TREE tVal;
+    int iVal;
 }
 
 
@@ -39,13 +32,13 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 %token <token> TRUE FALSE NONE
 %token <string> IDENTIFIER INTEGER FLOAT STRING
  
-%type <ident> ident
-%type <expr> numeric expr func_call bool string
-%type <exprvec> call_args
-%type <varvec> decl_args
-%type <block> program stmts block
-%type <stmt> stmt var_decl if_stmt func_decl while_loop
-%type <token> bin_op bool_op
+%type <tVal> ident
+%type <tVal> numeric expr func_call bool string
+%type <tVal> call_args
+%type <tVal> decl_args
+%type <tVal> program stmts block
+%type <tVal> stmt var_decl if_stmt func_decl while_loop
+%type <tVal> bin_op bool_op
 
 %left PLUS MINUS
 %left MULT DIV
@@ -58,74 +51,74 @@ void yyerror(const char *s) { std::printf("Error: %s \n", s);}
 
 %%
 
-program : stmts { programBlock = $1; }
-        | %empty { programBlock = new Block(); }
+program : stmts { TERNARY_TREE programBlock = create_node(NOTHING, PROGRAM, $1, NULL, NULL); }
+        | {}
         ;
 
-stmts   : stmt { $$ = new Block(); $$->statements.push_back($<stmt>1); }
-        | stmts stmt { $1->statements.push_back($<stmt>2); }
+stmts   : stmt { $$ = create_node(NOTHING, STATEMENTS, $1, NULL, NULL); }
+        | stmts stmt { $$ = create_node(NOTHING, STATEMENTS, $1, $2, NULL); }
         ;
 
-block   : INDENT stmts DEDENT { $$ = $2; }
+block   : INDENT stmts DEDENT { $$ = create_node(NOTHING, STATEMENTS, $2, NULL, NULL); }
         ;
 
-stmt    : expr { $$ = new ExpressionStatement(*$1); }
+stmt    : expr { $$ = NULL; }
         | var_decl
         | if_stmt
         | func_decl
         | while_loop
-        | RETURN expr { $$ = new ReturnStatement(*$2); }
+        | RETURN expr { $$ = NULL; }
         ;
 	
-ident   : IDENTIFIER { $$ = new Identifier(*$1); delete $1;}
+ident   : IDENTIFIER { $$ = NULL; }
         ;
 
-numeric : INTEGER { $$ = new Integer(atol($1->c_str())); delete $1; }
-        | FLOAT { $$ = new Double(atof($1->c_str())); delete $1; }
+numeric : INTEGER { $$ = NULL; }
+        | FLOAT { $$ = NULL; }
         ;
 
-bool    : TRUE { $$ = new Bool(true); }
-        | FALSE { $$ = new Bool(false); }
+bool    : TRUE { $$ = NULL; }
+        | FALSE { $$ = NULL; }
         ;
 
-string  : STRING { $$ = new String($1->c_str()); delete $1; }
+string  : STRING { $$ = NULL; }
         ;
 	
-var_decl    : ident ASSIGN expr { $$ = new VariableDeclaration(*$1, $3); }
-            | ident { $$ = new VariableDeclaration(*$1);}
+var_decl    : ident ASSIGN expr { $$ = NULL; }
+            | ident { $$ = NULL; }
             ;
 
-if_stmt : IF expr COLON block { $$ = new IfStatement($2, $4); }
-        | IF expr COLON block ELSE COLON block { $$ = new IfStatement($2, $4, $7); }
+if_stmt : IF expr COLON block { $$ = NULL; }
+        | IF expr COLON block ELSE COLON block { $$ = NULL; }
         ;
 
-func_decl   : DEF ident LPAREN decl_args RPAREN COLON block { $$ = new FunctionDeclaration(*$2, *$4, *$7); delete $4; }
+func_decl   : DEF ident LPAREN decl_args RPAREN COLON block { $$ = NULL; }
             ;
 
-decl_args   : var_decl { $$ = new VariableList(); $$->push_back($<var_decl>1); }
-            | decl_args COMMA var_decl { $1->push_back($<var_decl>3); }
-            | %empty { $$ = new VariableList(); }
+decl_args   : var_decl { $$ = NULL; }
+            | decl_args COMMA var_decl { $$ = NULL; }
+            | { $$ = NULL; }
 	
-func_call   : ident LPAREN call_args RPAREN { $$ = new MethodCall(*$1, *$3); delete $3; }
+func_call   : ident LPAREN call_args RPAREN { $$ = NULL; }
             ;
 
-call_args   : expr { $$ = new ExpressionList(); $$->push_back($1); }
-            | call_args COMMA expr { $1->push_back($3); }
-            | %empty { $$ = new ExpressionList(); }
+call_args   : expr { $$ = NULL;}
+            | call_args COMMA expr { $$ = NULL; }
+            | { $$ = NULL; }
             ;
 
-while_loop  : WHILE expr COLON block { $$ = new WhileLoop($2, $4); }
-            | WHILE expr COLON block ELSE COLON block { $$ = new WhileLoop($2, $4, $7); }
+while_loop  : WHILE expr COLON block { $$ = NULL; }
+            | WHILE expr COLON block ELSE COLON block { $$ = NULL; }
             ;
 
-expr    : ident { $<ident>$ = $1; }
+expr    : ident { $$ = NULL; }
         | numeric
         | bool
         | string
-        | ident ASSIGN expr { $$ = new Assignment(*$<ident>1, *$3); }
-        | expr bin_op expr { $$ = new BinaryOperator(*$1, $2, *$3); }
-        | expr bool_op expr { $$ = new BooleanOperator(*$1, $2, *$3); }
-        | LPAREN expr RPAREN { $$ = $2; }
+        | ident ASSIGN expr { $$ = NULL; }
+        | expr bin_op expr { $$ = NULL; }
+        | expr bool_op expr { $$ = NULL; }
+        | LPAREN expr RPAREN { $$ = NULL; }
         | func_call
         ;
 
@@ -146,3 +139,18 @@ bool_op : TCEQ
 
 	
 %%
+
+
+TERNARY_TREE create_node(int iVal, int identifier, TERNARY_TREE left, TERNARY_TREE center, TERNARY_TREE right) {
+
+    TERNARY_TREE t;
+    t = (TERNARY_TREE)malloc(sizeof(TREE_NODE));
+    t->value = iVal;
+    t->identifier = identifier;
+
+    t->left = left;
+    t->center = center;
+    t->right = right;
+
+    return(t);
+}
